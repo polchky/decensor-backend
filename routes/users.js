@@ -6,6 +6,6 @@ const router = new Router();
 
 router
     .param('userId', authenticate)
-    .get('/users/:userId', jwt.sub, users.read);
+    .get('/users/:userId', jwt, users.read);
 
 module.exports = router;
