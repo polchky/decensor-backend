@@ -1,0 +1,40 @@
+{
+  "name": "decensor-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start_dev": "nodemon -q -r dotenv/config index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polchky/decensor-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/polchky/decensor-backend/issues"
+  },
+  "homepage": "https://github.com/polchky/decensor-backend#readme",
+  "dependencies": {
+    "google-auth-library": "^3.1.0",
+    "googleapis": "^37.2.0",
+    "jsonwebtoken": "^8.5.0",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-compose": "^4.1.0",
+    "koa-jwt": "^3.5.1",
+    "koa-router": "^7.4.0",
+    "koa2-cors": "^2.0.6",
+    "mongoose": "^5.4.17"
+  },
+  "devDependencies": {
+    "dotenv": "^6.2.0",
+    "eslint": "^5.15.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "nodemon": "^1.18.10"
+  }
+}
