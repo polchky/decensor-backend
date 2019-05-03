@@ -1,5 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
-const jwt = require('jsonwebtoken');
+const JsonWebToken = require('jsonwebtoken');
+const { User } = require('../models');
 
 const controller = {
     signIn: async (ctx) => {
@@ -14,7 +15,7 @@ const controller = {
 
             // Generate new JWT
             const promise = new Promise((resolve, reject) => {
-                jwt.sign(
+                JsonWebToken.sign(
                     {
                         sub: payload.sub,
                         exp: payload.exp,
@@ -30,6 +31,19 @@ const controller = {
             ctx.body = { token };
         } catch (err) {
             ctx.response.status = 400;
+        }
+    },
+
+    authenticate: async (userId, ctx, next) => {
+        try {
+            if (ctx.state.user.sub === userId) {
+                await next();
+            } else {
+                console.log('mismatch!');
+                ctx.response.status = 401;
+            }
+        } catch (err) {
+            ctx.response.status = 401;
         }
     },
 };

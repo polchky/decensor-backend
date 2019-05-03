@@ -1,7 +1,7 @@
 
 const controller = {
-    test: (ctx) => {
-        console.log(ctx.state);
+    read: (ctx) => {
+        ctx.body = "lol";
     },
 
 

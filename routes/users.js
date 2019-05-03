@@ -1,9 +1,11 @@
 const Router = require('koa-router');
-const jwt = require('../middlewares/jwt');
-const { auth } = require('../controllers');
+const { authenticate, jwt } = require('../middlewares');
+const { users } = require('../controllers');
 
 const router = new Router();
+
 router
-    .param('userId', jwt, auth.authenticate);
+    .param('userId', authenticate)
+    .get('/users/:userId', jwt.sub, users.read);
 
 module.exports = router;
