@@ -1,15 +1,13 @@
-const auth = require('./auth');
 const channels = require('./channels');
-const regions = require('./regions');
+const playlistItems = require('./playlistItems');
 const subscriptions = require('./subscriptions');
-const users = require('./users');
 const videos = require('./videos');
 
-module.exports = {
-    auth,
+const helpers = {
     channels,
-    regions,
+    playlistItems,
     subscriptions,
-    users,
     videos,
 };
+
+module.exports = helpers;

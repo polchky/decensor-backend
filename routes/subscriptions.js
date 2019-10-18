@@ -1,11 +1,14 @@
 const Router = require('koa-router');
-const jwt = require('../middlewares/jwt');
-const { auth, subscriptions } = require('../controllers');
+const { authenticate, jwt } = require('../middlewares');
+const { channels, subscriptions } = require('../controllers');
 
 const router = new Router();
+/*
 router
-    .param('userId', jwt, auth.authenticate)
-    .get('users/:userId/subscriptions/', subscriptions.readByUser)
-    .put('users/:userId/subscriptions/', subscriptions.updateByUser);
+    .post('/subscriptions/', channels.listBySubscriptions);
+    .param('userId', authenticate)
+    .get('/users/:userId/subscriptions/', jwt, subscriptions.readByUser)
+    .put('/users/:userId/subscriptions/', jwt, subscriptions.updateByUser);
+    */
 
 module.exports = router;

@@ -3,14 +3,9 @@ const Cors = require('koa2-cors');
 const BodyParser = require('koa-bodyparser');
 const Mongoose = require('mongoose');
 const router = require('./routes');
+const constants = require('./constants');
 
-const dbName = 'decensor';
-const mongooseOptions = {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useFindAndModify: false,
-};
-Mongoose.connect(`mongodb://localhost:27017/${dbName}`, mongooseOptions);
+Mongoose.connect(`mongodb://localhost:27017/${constants.db.name}`, constants.db.options);
 
 
 const app = new Koa();

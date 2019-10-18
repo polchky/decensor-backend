@@ -1,6 +1,6 @@
 
 const auth = async (id, ctx, next) => {
-    ctx.auth = { sub: id };
+    ctx.userId = id;
     return next();
 };
 

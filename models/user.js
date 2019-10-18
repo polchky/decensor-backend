@@ -1,7 +1,7 @@
 const Mongoose = require('mongoose');
 
 const subscriptionSchema = new Mongoose.Schema({
-    channelId: String,
+    _id: String,
 });
 
 const schema = new Mongoose.Schema({

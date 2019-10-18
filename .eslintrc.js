@@ -25,10 +25,16 @@ module.exports = {
             4,
         ],
         'no-param-reassign': [
-            2,
+            'error',
             {
                 props: false,
             },
         ],
+        'no-underscore-dangle': [
+            'error',
+            {
+                'allow': ['_id'],
+            }
+        ]
     },
 };
