@@ -22,7 +22,7 @@ const playlistItemsHelper = {
                     fields: 'nextPageToken,items(contentDetails(videoId,videoPublishedAt))',
                     maxResults: constants.youtubeApi.maxResults,
                     pageToken,
-                    playlistId: channel.uploads,
+                    playlistId: channel._id.replace('UC', 'UU'),
                 });
                 pageToken = res.data.nextPageToken;
                 const { items } = res.data;
@@ -46,7 +46,16 @@ const playlistItemsHelper = {
             );
         } catch (err) {
             if (error.hasQuota(err)) {
-                logger.warn(`Unknown error while getting videos ids for channel ${channel._id}: ${err}`);
+                // update check date
+                await Channel.updateOne(
+                    { _id: channel._id },
+                    {
+                        $set: {
+                            playlistItemsChecked: now,
+                            status: constants.status.channel.unreachable,
+                        },
+                    }
+                );
                 return error.UNKNOWN_ERROR;
             }
             return error.QUOTA_DEPLETED;
@@ -68,9 +77,9 @@ const playlistItemsHelper = {
                     status: constants.status.channel.active,
                     playlistItemsChecked: { $not: { $gt: until } },
                 },
-                { uploads: true }
+                { _id: true }
             )
-            .sort({ playlistItemsChecked: 1 })
+            .sort({ playlistItemsChecked: 1, videos: 1 })
             .limit(limitChannels)
             .lean();
         if (channels.length === 0) return error.EMPTY_LIST;

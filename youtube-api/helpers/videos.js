@@ -165,7 +165,6 @@ const videosHelper = {
             {
                 $match: {
                     status: constants.status.channel.active,
-                    uploads: { $exists: true },
                     videosChecked: { $not: { $gt: until } },
                 },
             },

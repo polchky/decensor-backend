@@ -14,7 +14,7 @@ const constants = {
         vidsPerDayToGetUploads: 1.5,
         daysBetweenVideosChecks: 30,
         daysBetweenPlaylistItemsChecks: 15,
-        daysToStablilizeVideos: 365,
+        daysToStablilizeVideos: 30,
     },
     thumbnail: {
         prefix: 'https://yt3.ggpht.com/',

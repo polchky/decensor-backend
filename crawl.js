@@ -22,33 +22,18 @@ const crawlChannelsInfo = async () => {
     }
 };
 
-const crawlUploadsIds = async () => {
-    try {
-        let ret = error.OK;
-        while (ret === error.OK) {
-            /* eslint-disable-next-line no-await-in-loop */
-            ret = await helpers.channels.getNextUploadsIds(batchSize);
-        }
-        logger.info('Crawling finished without error');
-    } catch (err) {
-        logger.warn(`Error in crawler: ${err}`);
-    }
-};
-
 const crawlVideosIds = async () => {
     try {
         let ret = error.OK;
-        let i = 0;
-        while (ret === error.OK && i < 20) {
-            i += 1;
+        while (ret === error.OK) {
             /* eslint-disable-next-line no-await-in-loop */
             ret = await helpers.playlistItems.getNextVideosIds(
                 constants.youtubeApi.concurrentRequests
             );
         }
-        logger.info('Crawling finished without error');
+        logger.info('Crawling videos IDs finished without error');
     } catch (err) {
-        logger.warn(`Error in crawler: ${err}`);
+        logger.warn(`Error in videos IDs crawler: ${err}`);
     }
 };
 
@@ -59,10 +44,11 @@ const crawlVideos = async () => {
             /* eslint-disable-next-line no-await-in-loop */
             ret = await helpers.videos.getNextVideos(batchSize);
         }
-        logger.info('Crawling finished without error');
+        logger.info('Crawling videos finished without error');
     } catch (err) {
-        logger.warn(`Error in crawler: ${err}`);
+        logger.warn(`Error in videos crawler: ${err}`);
     }
 };
 
-crawlVideosIds().then(crawlVideos).then(() => process.exit());
+
+crawlVideos().then(crawlVideosIds).then(() => process.exit());

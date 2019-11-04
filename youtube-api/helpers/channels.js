@@ -26,17 +26,6 @@ const channelsHelper = {
         }
     },
 
-    insertChannelsUploadsId: async (channel) => {
-        try {
-            await Channel.updateOne(
-                { _id: channel.id },
-                { $set: { uploads: channel.contentDetails.relatedPlaylists.uploads } }
-            );
-        } catch (err) {
-            logger.warn(`Error while inserting uploads for channel ${channel.id}: ${err}`);
-        }
-    },
-
     determineChannelStatus: (channel) => {
         const status = constants.status.channel;
 
@@ -151,34 +140,6 @@ const channelsHelper = {
         ).limit(limitChannels).lean();
 
         return channelsHelper.getChannels(request, 'getting next channels stats');
-    },
-
-    getNextUploadsIds: async (limitChannels = 0) => {
-        // Find active channels without uploads ID
-        const channels = await Channel.find(
-            {
-                status: constants.status.channel.active,
-                uploads: { $exists: false },
-            },
-            { _id: true }
-        )
-            .sort({ subs: -1 })
-            .limit(limitChannels);
-
-        if (channels.length === 0) return error.EMPTY_LIST;
-        const ids = channels.map((channel) => channel._id);
-
-        const promises = [];
-        for (let i = 0; i < ids.length; i += constants.youtubeApi.maxResults) {
-            promises.push(channelsHelper.getChannelsInfo(
-                ids.slice(i, i + constants.youtubeApi.maxResults),
-                'contentDetails',
-                'items(id,contentDetails/relatedPlaylists/uploads)',
-                channelsHelper.insertChannelsUploadsId
-            ));
-        }
-
-        return error.checkPromises(promises, 'getting next uploads IDs');
     },
 
     updateNextChannels: async (limitChannels = 0, status, frequency) => {

@@ -15,7 +15,6 @@ const channelSchema = new Mongoose.Schema({
     subs: Number,
     videos: Number,
     status: String,
-    uploads: String,                        // ID of the uploads playlist
     created: Date,                          // Date of channel creation
     indexed: Date,                          // Date of first referencing
     checked: Date,                          // Date of last check of channel stats
