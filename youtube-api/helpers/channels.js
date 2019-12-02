@@ -95,9 +95,25 @@ const channelsHelper = {
                 ));
             }
             await Promise.all(promises);
+            // Update missing channels
+            const ids = Object.keys(dict);
+            const unreachedStatus = [
+                constants.status.channel.new,
+                constants.status.channel.unreached,
+            ];
+            // Update unreached channels
+            await Channel.updateMany(
+                { _id: { $in: ids }, status: { $in: unreachedStatus } },
+                {
+                    $set: {
+                        checked: new Date(),
+                        status: constants.status.channel.unreached,
+                    },
+                },
+            );
             // Update unreachable channels
             await Channel.updateMany(
-                { _id: { $in: Object.keys(dict) } },
+                { _id: { $in: ids }, status: { $nin: unreachedStatus } },
                 {
                     $set: {
                         checked: new Date(),

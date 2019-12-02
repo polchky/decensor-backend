@@ -5,6 +5,7 @@ const controller = {
     listByIds: async (ctx) => {
         const { id, country } = ctx.request.query;
         if (!id) ctx.throw(400, 'channel ids required');
+        if (!country || country.length !== 2) ctx.throw(400, 'country code required');
         const ids = id.split(',').slice(0, constants.decensorApi.maxResults);
         const project = {
             title: true,
@@ -14,11 +15,10 @@ const controller = {
             subs: true,
             videos: true,
             status: true,
+            [`allowed.${country}`]: true,
+            [`allowed.${country}`]: true,
         };
-        if (country && country.length === 2) {
-            project[`allowed.${country}`] = true;
-            project[`blocked.${country}`] = true;
-        }
+
         ctx.body = await Channel.find(
             { _id: { $in: ids } },
             project,

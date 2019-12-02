@@ -28,6 +28,7 @@ const constants = {
             spam: 'spam',
             private: 'private',
             unreachable: 'unreachable',
+            unreached: 'unreached',
         },
         video: {
             new: 'new',

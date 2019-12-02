@@ -13,9 +13,7 @@ const subscriptionsHelper = {
         try {
             const promises = [];
             let pageToken = '';
-            let now;
             while (pageToken !== undefined) {
-                now = new Date();
                 /* eslint-disable-next-line no-await-in-loop */
                 const res = await youtube.subscriptions.list({
                     prettyPrint: false,
@@ -28,8 +26,7 @@ const subscriptionsHelper = {
                 pageToken = res.data.nextPageToken;
                 for (let i = 0; i < res.data.items.length; i += 1) {
                     promises.push(channelsHelper.insertChannel(
-                        res.data.items[i].snippet.resourceId.channelId,
-                        now
+                        res.data.items[i].snippet.resourceId.channelId
                     ));
                 }
             }
