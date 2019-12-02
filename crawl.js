@@ -1,4 +1,5 @@
 const Mongoose = require('mongoose');
+const Region = require('./models/region');
 const Pino = require('pino');
 const logger = require('./logging')({}, Pino.destination(`./logs/${new Date().toISOString()}.log`));
 const constants = require('./constants');
@@ -8,6 +9,8 @@ const error = require('./youtube-api/error');
 Mongoose.connect(`mongodb://localhost:27017/${constants.db.name}`, constants.db.options);
 
 const batchSize = constants.youtubeApi.concurrentRequests * constants.youtubeApi.maxResults;
+
+// Get regions
 
 const crawlChannelsInfo = async () => {
     try {
@@ -50,5 +53,9 @@ const crawlVideos = async () => {
     }
 };
 
+const getRegions = async () => {
+    const res = await Region.find();
+    constants.regions = res.map((region) => region._id);
+};
 
-crawlVideos().then(crawlVideosIds).then(() => process.exit());
+getRegions().then(crawlVideos).then(crawlVideosIds).then(() => process.exit());
