@@ -170,19 +170,39 @@ const channelsHelper = {
         return channelsHelper.getChannels(request, 'updating next channels');
     },
 
-    setChannelBlockedCountries: async (channelId) => {
-        const countries = await Video.aggregate([
-            { $match: { _id: channelId } },
-            { $group: { _id: 0, countries: { $addToSet: '$blocked' } } },
-            { $project: { countries: { $reduce: { input: '$countries', initialValue: [], in: { $setUnion: ['$$value', '$$this'] } } } } },
-
+    setChannelActiveBlockedRegions: async (channelId) => {
+        const { regions } = constants;
+        const blocked = await Video.aggregate([
+            { $match: { channelId, status: constants.status.video.active } },
+            { $group: { _id: 0, blocked: { $addToSet: '$blocked' }, allowed: { $addToSet: '$allowed' } } },
+            {
+                $project: {
+                    blocked: { $reduce: { input: '$blocked', initialValue: [], in: { $setUnion: ['$$value', '$$this'] } } },
+                    allowed: { $reduce: { input: '$allowed', initialValue: [], in: { $setUnion: ['$$value', '$$this'] } } },
+                },
+            },
+            {
+                $project: {
+                    blocked: {
+                        $cond: {
+                            if: { $eq: ['$allowed', []] },
+                            then: '$blocked',
+                            else: { $setUnion: ['$blocked', { $setDifference: [regions, '$allowed'] }] },
+                        },
+                    },
+                },
+            },
         ]);
+        await Channel.updateOne(
+            { _id: channelId },
+            { $set: { 'blocked.active': blocked.length > 0 ? blocked[0].blocked : [] } }
+        );
     },
 
-    setChannelsBlockedCountries: async (channelsIds) => {
+    setChannelsActiveBlockedRegions: async (channelsIds) => {
         const promises = [];
         for (let i = 0; i < channelsIds.length; i += 1) {
-            promises.push(channelsHelper.setChannelBlockedCountries(channelsIds[i]));
+            promises.push(channelsHelper.setChannelActiveBlockedRegions(channelsIds[i]));
         }
         return Promise.all(promises);
     },

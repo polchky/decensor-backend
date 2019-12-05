@@ -1,16 +1,15 @@
 const Mongoose = require('mongoose');
-const Region = require('./models/region');
 const Pino = require('pino');
+const Region = require('./models/region');
 const logger = require('./logging')({}, Pino.destination(`./logs/${new Date().toISOString()}.log`));
 const constants = require('./constants');
 const helpers = require('./youtube-api/helpers');
 const error = require('./youtube-api/error');
+const Channel = require('./models/channel');
 
 Mongoose.connect(`mongodb://localhost:27017/${constants.db.name}`, constants.db.options);
 
 const batchSize = constants.youtubeApi.concurrentRequests * constants.youtubeApi.maxResults;
-
-// Get regions
 
 const crawlChannelsInfo = async () => {
     try {
@@ -59,3 +58,17 @@ const getRegions = async () => {
 };
 
 getRegions().then(crawlVideos).then(crawlVideosIds).then(() => process.exit());
+/**
+getRegions().then(async () => {
+    let index = 0;
+    while (true) {
+        index += 1;
+        // eslint-disable-next-line no-await-in-loop
+        const channels = await Channel.find({ 'blocked.active': { $exists: false } }, { _id: true }).limit(100).lean();
+        if (channels.length <= 0) break;
+        // eslint-disable-next-line no-await-in-loop
+        await helpers.channels.setChannelsBlockedRegions(channels.map((c) => c._id));
+        console.log(index);
+    }
+});
+*/

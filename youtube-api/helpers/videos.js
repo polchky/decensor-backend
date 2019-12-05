@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const Video = require('../../models/video');
 const Channel = require('../../models/channel');
-const Region = require('../../models/region');
 const logger = require('../../logging/index').getLogger();
 const error = require('../error');
 const constants = require('../../constants');
 const youtube = require('../client')();
+const channelsHelper = require('./channels');
 
 const videosHelper = {
 
@@ -57,26 +57,20 @@ const videosHelper = {
                     ],
                 );
                 // Update channel's blocked list for archived videos
-                /**
                 if (archived) {
                     let blocked;
                     if (set.blocked) {
                         ({ blocked } = set);
                     } else {
-                        // let countries = await Region.find();
-                        // countries = countries.map((region) => region._id);
+                        blocked = constants.regions.filter(
+                            (region) => !set.allowed.includes(region)
+                        );
                     }
                     await Channel.updateOne(
-                        { _id: v.channelId },
-                        { $addToSet: { '$blocked.archived': { $each: blocked } } }
-                    );
-
-                    await Channel.updateOne(
-                        { _id: v.channelId },
-                        { }
+                        { _id: v.snippet.channelId },
+                        { $addToSet: { 'blocked.archived': { $each: blocked } } }
                     );
                 }
-                **/
             }
         } catch (err) {
             logger.warn(`Error while updating video ${v.id}: ${err}`);
@@ -209,11 +203,18 @@ const videosHelper = {
             }
             promises.push(videosHelper.getVideosBatch(videos, clearedChannels));
         }
-        return error.checkPromises(promises, 'updating next videos');
+        const res = await error.checkPromises(promises, 'updating next videos');
+        await channelsHelper.setChannelsActiveBlockedRegions(
+            channels.map((channel) => channel._id)
+        );
+        return res;
     },
 
     getNextVideos: async (limitVideos = 0) => {
-        const videos = await Video.find({ status: constants.status.video.new }).limit(limitVideos);
+        const videos = await Video.find(
+            { status: constants.status.video.new },
+            { channelId: true }
+        ).sort({ channelId: 1 }).limit(limitVideos).lean();
         if (videos.length === 0) return error.EMPTY_LIST;
         const videosIds = videos.map((v) => v._id);
         const promises = [];
@@ -222,7 +223,11 @@ const videosHelper = {
                 videosHelper.getVideosBatch(videosIds.splice(0, constants.youtubeApi.maxResults))
             );
         }
-        return error.checkPromises(promises, 'getting next videos');
+        const channelsIds = [...new Set(videos.map((video) => video.channelId))];
+        await channelsHelper.setChannelsActiveBlockedRegions(channelsIds);
+        const res = await error.checkPromises(promises, 'getting next videos');
+
+        return res;
     },
 
 };

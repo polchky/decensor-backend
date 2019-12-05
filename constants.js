@@ -1,4 +1,5 @@
 const constants = {
+    regions: [],
     db: {
         name: 'decensor',
         options: {
