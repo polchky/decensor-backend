@@ -11,45 +11,59 @@ Mongoose.connect(`mongodb://localhost:27017/${constants.db.name}`, constants.db.
 
 const batchSize = constants.youtubeApi.concurrentRequests * constants.youtubeApi.maxResults;
 
-const crawlChannelsInfo = async () => {
-    try {
-        let ret = error.OK;
-        while (ret === error.OK) {
-            /* eslint-disable-next-line no-await-in-loop */
-            ret = await helpers.channels.getNextChannelsStats(batchSize);
+const crawlers = {
+    crawlChannelsInfo: async () => {
+        try {
+            let ret = error.OK;
+            while (ret === error.OK) {
+                /* eslint-disable-next-line no-await-in-loop */
+                ret = await helpers.channels.getNextChannelsStats(batchSize);
+            }
+            logger.info('Crawling finised without error');
+        } catch (err) {
+            logger.warn(`Error in crawler: ${err}`);
         }
-        logger.info('Crawling finised without error');
-    } catch (err) {
-        logger.warn(`Error in crawler: ${err}`);
-    }
-};
+    },
+    crawlVideosIds: async () => {
+        try {
+            let ret = error.OK;
+            while (ret === error.OK) {
+                /* eslint-disable-next-line no-await-in-loop */
+                ret = await helpers.playlistItems.getNextVideosIds(
+                    constants.youtubeApi.concurrentRequests
+                );
+            }
+            logger.info('Crawling videos IDs finished without error');
+        } catch (err) {
+            logger.warn(`Error in videos IDs crawler: ${err}`);
+        }
+    },
 
-const crawlVideosIds = async () => {
-    try {
-        let ret = error.OK;
-        while (ret === error.OK) {
-            /* eslint-disable-next-line no-await-in-loop */
-            ret = await helpers.playlistItems.getNextVideosIds(
-                constants.youtubeApi.concurrentRequests
-            );
+    crawlVideos: async () => {
+        try {
+            let ret = error.OK;
+            while (ret === error.OK) {
+                /* eslint-disable-next-line no-await-in-loop */
+                ret = await helpers.videos.getNextVideos(batchSize);
+            }
+            logger.info('Crawling videos finished without error');
+        } catch (err) {
+            logger.warn(`Error in videos crawler: ${err}`);
         }
-        logger.info('Crawling videos IDs finished without error');
-    } catch (err) {
-        logger.warn(`Error in videos IDs crawler: ${err}`);
-    }
-};
-
-const crawlVideos = async () => {
-    try {
-        let ret = error.OK;
-        while (ret === error.OK) {
-            /* eslint-disable-next-line no-await-in-loop */
-            ret = await helpers.videos.getNextVideos(batchSize);
+    },
+    setActiveBlockedRegions: async () => {
+        let index = 0;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            index += 1;
+            // eslint-disable-next-line no-await-in-loop
+            const channels = await Channel.find({ 'blocked.active': { $exists: false } }, { _id: true }).limit(100).lean();
+            if (channels.length <= 0) break;
+            // eslint-disable-next-line no-await-in-loop
+            await helpers.channels.setChannelsBlockedRegions(channels.map((c) => c._id));
+            logger.info(index);
         }
-        logger.info('Crawling videos finished without error');
-    } catch (err) {
-        logger.warn(`Error in videos crawler: ${err}`);
-    }
+    },
 };
 
 const getRegions = async () => {
@@ -57,18 +71,7 @@ const getRegions = async () => {
     constants.regions = res.map((region) => region._id);
 };
 
-getRegions().then(crawlVideos).then(crawlVideosIds).then(() => process.exit());
-/**
-getRegions().then(async () => {
-    let index = 0;
-    while (true) {
-        index += 1;
-        // eslint-disable-next-line no-await-in-loop
-        const channels = await Channel.find({ 'blocked.active': { $exists: false } }, { _id: true }).limit(100).lean();
-        if (channels.length <= 0) break;
-        // eslint-disable-next-line no-await-in-loop
-        await helpers.channels.setChannelsBlockedRegions(channels.map((c) => c._id));
-        console.log(index);
-    }
-});
-*/
+getRegions()
+    .then(crawlers.crawlVideos)
+    .then(crawlers.crawlVideosIds)
+    .then(() => process.exit());
