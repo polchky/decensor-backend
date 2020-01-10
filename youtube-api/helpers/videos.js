@@ -29,9 +29,13 @@ const videosHelper = {
 
     updateVideo: async (v) => {
         try {
+            // Remove illegal characters
+            let { title } = v.snippet;
+            title = title.split('$').join('_');
+            title = title.split('.').join('_');
             const status = constants.status.video;
             const set = {
-                title: v.snippet.title,
+                title,
                 created: new Date(v.snippet.publishedAt),
                 checked: new Date(),
             };
